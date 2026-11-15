@@ -32,9 +32,12 @@ if [[ ! -e $IMAGE ]]; then
     loop=$(losetup -P --find --show $IMAGE); udevadm settle
     mkfs.exfat -L "$LABEL" "${loop}p1" >/dev/null
     losetup -d "$loop"
-    chown iphone-disk:iphone-disk $IMAGE; chmod 660 $IMAGE
     echo "created $IMAGE ($SIZE sparse)"
+else
+    echo "reusing existing $IMAGE"
 fi
+# also after an uninstall that kept the image (it was handed to the user)
+chown iphone-disk:iphone-disk $DIR $IMAGE; chmod 750 $DIR; chmod 660 $IMAGE
 
 # --- TLS: private CA, server cert, client cert for the Pi -------------------
 cd $ETC/tls
