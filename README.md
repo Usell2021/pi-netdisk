@@ -82,6 +82,21 @@ journalctl -u iphone-disk-gate -f          # client connected / gone / mounted
 ssh -t <pi> 'sudo sed -i "s/^PC_HOST=.*/PC_HOST=192.168.x.y/" /etc/iphone-disk/pi.conf && sudo systemctl restart iphone-disk'
 ```
 
+### Ethernet вместо Wi‑Fi
+
+Всё работает и по кабелю, причём быстрее: упор будет в USB 2.0 гаджета и TLS
+на CPU Pi, ориентировочно 20–35 МБ/с против единиц МБ/с по Wi‑Fi. Главное,
+чтобы `PC_HOST` на Pi указывал на адрес ПК в той сети, через которую идёт связь.
+
+- **Pi и ПК в одном роутере по кабелю:** ничего менять не надо. Желательно
+  закрепить IP ПК в DHCP роутера.
+- **Прямой кабель Pi ↔ ноут:** в NetworkManager на ноуте для проводного
+  подключения выберите «Shared to other computers»
+  (`nmcli con modify <eth-conn> ipv4.method shared`). Ноут раздаст Pi адрес
+  и сам будет на `10.42.0.1`. На Pi пропишите `PC_HOST=10.42.0.1` и сделайте
+  `systemctl restart iphone-disk`. После этого по Wi‑Fi Pi на этот ПК не пойдёт,
+  пока `PC_HOST` не вернуть обратно.
+
 ### Перенос на другой ПК
 
 На новом ПК запустите `sudo ./pc/install-pc.sh <pi-ssh-host>`. Pi получит новые
