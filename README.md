@@ -103,6 +103,41 @@ ssh -t <pi> 'sudo sed -i "s/^PC_HOST=.*/PC_HOST=192.168.x.y/" /etc/iphone-disk/p
 сертификаты и адрес и переключится сам. Вручную это делается так:
 `iphone-disk-set-pc <bundle.tar>`.
 
+## Удаление
+
+Скрипты удаляют всё, что поставили установщики. Склонированный репозиторий
+остаётся на месте.
+
+**Pi:**
+
+```sh
+ssh -t <pi> sudo ~/pi-netdisk/uninstall-pi.sh [--remove-packages]
+ssh -t <pi> sudo reboot
+```
+
+- Удаляется: служба, USB‑гаджет, `/etc/iphone-disk` (с TLS‑ключами), скрипты в `/usr/local/sbin`.
+- Возвращаются умолчания Raspberry Pi OS:
+  - `config.txt` в том виде, что был до установки;
+  - `dwc2` убирается из `/etc/modules`;
+  - zram writeback и swap‑файл;
+  - sysctl;
+  - энергосбережение Wi‑Fi.
+- `--remove-packages` дополнительно удаляет `nbd-client`.
+
+**ПК:**
+
+```sh
+sudo ./pc/uninstall-pc.sh [--delete-image] [--remove-packages] [-y]
+```
+
+- Удаляются службы, `/etc/iphone-disk` (CA и ключи), `iphone-disk-gate`,
+  системный пользователь, бандл для Pi и пустая папка `~/iPhone`.
+- **Образ с файлами по умолчанию сохраняется.** Он остаётся в
+  `/var/lib/iphone-disk/disk.img` и переходит во владение вашему пользователю.
+  Удаляется только с флагом `--delete-image`. Смонтировать его без служб:
+  `sudo mount -o loop,offset=1048576 /var/lib/iphone-disk/disk.img /mnt`
+- `--remove-packages` дополнительно удаляет `nbd` и `exfatprogs`.
+
 ## Как диск представляется телефону
 
 По умолчанию диск называет себя `iphone-disk / Network Disk`, отдаёт серийник Pi,
@@ -149,10 +184,12 @@ DCIM/101APPLE/IMG_0002.JPG
 
 ```
 pi/install-pi.sh           установка на Pi
+pi/uninstall-pi.sh         удаление с Pi + откат системных настроек
 pi/iphone-disk-gadget.sh   демон: USB‑гаджет ⇄ nbd-client
 pi/iphone-disk-set-pc.sh   принять бандл (сертификаты + адрес ПК)
 pi/pi.conf.example         пример конфига Pi (адрес ПК, USB/SCSI‑строки)
 pc/install-pc.sh           установка на ПК: образ, TLS, nbd-server, службы
+pc/uninstall-pc.sh         удаление с ПК (образ сохраняется, если не указать --delete-image)
 pc/iphone-disk-gate.py     монтирование на ПК ⇄ отдача диска Pi, без одновременного доступа
 ```
 
