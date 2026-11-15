@@ -4,7 +4,11 @@
 #   USB host attached + PC reachable -> medium present (/dev/nbd0)
 #   otherwise                        -> "card reader without a card"
 set -uo pipefail
-. /etc/iphone-disk/pi.conf          # PC_HOST, PC_PORT
+. /etc/iphone-disk/pi.conf          # PC_HOST, PC_PORT, optional USB_* (see pi.conf.example)
+: "${USB_VID:=0x1d6b}" "${USB_PID:=0x0104}" "${USB_BCD:=0x0100}"
+: "${USB_MANUFACTURER:=iphone-disk}" "${USB_PRODUCT:=Network Disk}"
+: "${USB_SERIAL:=$(tr -d '\0' < /proc/device-tree/serial-number 2>/dev/null)}"
+: "${USB_INQUIRY:=}"                # SCSI "VENDOR  PRODUCT         REV " (8+16+4)
 CFG=/etc/iphone-disk
 G=/sys/kernel/config/usb_gadget/iphone-disk
 NBD=/dev/nbd0
@@ -16,15 +20,16 @@ setup_gadget() {
     modprobe libcomposite; modprobe nbd nbds_max=1
     [[ -d $G ]] && return
     mkdir -p $G && cd $G
-    echo 0x1d6b > idVendor; echo 0x0104 > idProduct
-    echo 0x0100 > bcdDevice; echo 0x0200 > bcdUSB
+    echo "$USB_VID" > idVendor; echo "$USB_PID" > idProduct
+    echo "$USB_BCD" > bcdDevice; echo 0x0200 > bcdUSB
     mkdir -p strings/0x409
-    echo "iphone-disk" > strings/0x409/manufacturer
-    echo "Network Disk" > strings/0x409/product
-    cat /proc/device-tree/serial-number 2>/dev/null | tr -d '\0' > strings/0x409/serialnumber
+    echo "$USB_MANUFACTURER" > strings/0x409/manufacturer
+    echo "$USB_PRODUCT" > strings/0x409/product
+    echo "$USB_SERIAL" > strings/0x409/serialnumber
     mkdir -p functions/mass_storage.0
     echo 1 > functions/mass_storage.0/stall
     echo 1 > $LUN/removable; echo 0 > $LUN/ro; echo 0 > $LUN/cdrom; echo 0 > $LUN/nofua
+    [[ -n $USB_INQUIRY ]] && printf '%s' "$USB_INQUIRY" > $LUN/inquiry_string
     mkdir -p configs/c.1/strings/0x409
     echo "mass storage" > configs/c.1/strings/0x409/configuration
     echo 100 > configs/c.1/MaxPower

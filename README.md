@@ -88,6 +88,29 @@ ssh -t <pi> 'sudo sed -i "s/^PC_HOST=.*/PC_HOST=192.168.x.y/" /etc/iphone-disk/p
 сертификаты и адрес и переключится сам. Вручную это делается так:
 `iphone-disk-set-pc <bundle.tar>`.
 
+## Как диск представляется телефону
+
+По умолчанию диск называет себя `iphone-disk / Network Disk`, отдаёт серийник Pi,
+а SCSI‑строка у него `Linux File-Stor Gadget`. Всё это можно заменить строками
+обезличенного кардридера: возьмите за основу [`pi/pi.conf.example`](pi/pi.conf.example)
+и допишите нужные `USB_*` в `/etc/iphone-disk/pi.conf` на Pi. Применяется после
+перезагрузки Pi.
+
+```sh
+ssh -t <pi> 'sudoedit /etc/iphone-disk/pi.conf && sudo reboot'
+```
+
+Метка тома (имя диска в «Файлах») задаётся при создании образа (`LABEL=…`,
+по умолчанию `Untitled`). Переименовать существующий образ, пока iPhone
+не подключён:
+
+```sh
+sudo systemctl stop iphone-disk-gate
+loop=$(sudo losetup -P --find --show /var/lib/iphone-disk/disk.img)
+sudo exfatlabel ${loop}p1 Untitled && sudo losetup -d $loop
+sudo systemctl start iphone-disk-gate
+```
+
 ## Импорт в «Фото» на iPhone
 
 «Фото» показывают «Импорт» только для структуры как на карте камеры (DCF):
@@ -113,6 +136,7 @@ DCIM/101APPLE/IMG_0002.JPG
 pi/install-pi.sh           установка на Pi
 pi/iphone-disk-gadget.sh   демон: USB‑гаджет ⇄ nbd-client
 pi/iphone-disk-set-pc.sh   принять бандл (сертификаты + адрес ПК)
+pi/pi.conf.example         пример конфига Pi (адрес ПК, USB/SCSI‑строки)
 pc/install-pc.sh           установка на ПК: образ, TLS, nbd-server, службы
 pc/iphone-disk-gate.py     монтирование на ПК ⇄ отдача диска Pi, без одновременного доступа
 ```

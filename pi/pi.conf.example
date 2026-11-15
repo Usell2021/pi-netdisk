@@ -1,0 +1,24 @@
+# /etc/iphone-disk/pi.conf
+# PC_HOST is written by install-pc.sh / iphone-disk-set-pc; the rest is optional.
+# USB_* are applied when the gadget is created, i.e. after a reboot of the Pi
+# (it reboots on every plug-in anyway when powered by the phone).
+
+PC_HOST=192.168.1.10
+PC_PORT=10809
+
+# How the disk introduces itself to the phone. Defaults (if unset):
+#   iphone-disk / Network Disk / Pi serial / "Linux File-Stor Gadget".
+# Example below: a plain, unbranded USB card reader.
+USB_MANUFACTURER="Generic"
+USB_PRODUCT="Mass Storage Device"
+USB_SERIAL="000000001206"
+USB_BCD=0x0100
+
+# SCSI INQUIRY: vendor (8 chars) + product (16) + revision (4), space-padded.
+USB_INQUIRY="Generic STORAGE DEVICE  1206"
+
+# USB vendor/product ID. Default 1d6b:0104 is the Linux Foundation's
+# composite-gadget ID. Use an ID you are entitled to; do not borrow a real
+# manufacturer's.
+#USB_VID=0x1d6b
+#USB_PID=0x0104

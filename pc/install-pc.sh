@@ -5,7 +5,7 @@
 set -euo pipefail
 
 SIZE="${SIZE:-32G}"
-LABEL="${LABEL:-IPHONE}"
+LABEL="${LABEL:-Untitled}"
 DIR=/var/lib/iphone-disk
 ETC=/etc/iphone-disk
 IMAGE=$DIR/disk.img
