@@ -17,8 +17,7 @@ USB_BCD=0x0100
 # SCSI INQUIRY: vendor (8 chars) + product (16) + revision (4), space-padded.
 USB_INQUIRY="Generic STORAGE DEVICE  1206"
 
-# USB vendor/product ID. Default 1d6b:0104 is the Linux Foundation's
-# composite-gadget ID. Use an ID you are entitled to; do not borrow a real
-# manufacturer's.
-#USB_VID=0x1d6b
-#USB_PID=0x0104
+# USB vendor/product ID (hex). Current: 1d6b:0104, Linux Foundation
+# "Multifunction Composite Gadget".
+USB_VID=0x1d6b
+USB_PID=0x0104
